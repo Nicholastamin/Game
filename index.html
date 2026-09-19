@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixelForge Arcade</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#070b14;
+    color:white;
+}
+
+header{
+    padding:35px 6%;
+    background:linear-gradient(135deg,#111827,#172554);
+    border-bottom:1px solid #26344f;
+}
+
+header h1{
+    margin:0;
+    font-size:clamp(35px,7vw,70px);
+}
+
+header p{
+    color:#aebbd0;
+    max-width:700px;
+    font-size:17px;
+}
+
+main{
+    width:92%;
+    max-width:1250px;
+    margin:30px auto;
+}
+
+.toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.search{
+    flex:1;
+    min-width:220px;
+    padding:13px;
+    border-radius:12px;
+    border:1px solid #334155;
+    background:#111827;
+    color:white;
+}
+
+.filter{
+    padding:12px 17px;
+    border:1px solid #334155;
+    background:#111827;
+    color:white;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.filter.active{
+    background:#2563eb;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fit,minmax(270px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#101722;
+    border:1px solid #26344b;
+    border-radius:18px;
+    overflow:hidden;
+    transition:.2s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:#3b82f6;
+}
+
+.thumbnail{
+    height:160px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:65px;
+    background:
+    radial-gradient(circle at center,#263b63,#0d1420);
+}
+
+.content{
+    padding:18px;
+}
+
+.content h2{
+    margin:5px 0;
+}
+
+.content p{
+    color:#aebbd0;
+    min-height:50px;
+    line-height:1.5;
+}
+
+.category{
+    font-size:12px;
+    color:#7dd3fc;
+    font-weight:bold;
+}
+
+.play{
+    display:inline-block;
+    margin-top:10px;
+    padding:11px 18px;
+    background:#2563eb;
+    border-radius:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+footer{
+    text-align:center;
+    padding:40px;
+    color:#64748b;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>PIXELFORGE</h1>
+    <p>
+        Arcade game browser berbasis HTML5.
+        Mainkan berbagai game langsung dari browser.
+    </p>
+</header>
+
+<main>
+
+<div class="toolbar">
+
+<input
+    id="search"
+    class="search"
+    type="text"
+    placeholder="Cari game..."
+>
+
+<button class="filter active" data-filter="all">
+    Semua
+</button>
+
+<button class="filter" data-filter="racing">
+    Balap
+</button>
+
+<button class="filter" data-filter="action">
+    Action
+</button>
+
+<button class="filter" data-filter="strategy">
+    Strategy
+</button>
+
+</div>
+
+<div id="gameGrid" class="grid"></div>
+
+</main>
+
+<footer>
+    PIXELFORGE ARCADE • HTML5
+</footer>
+
+<script>
+
+const games = [
+
+{
+    name:"Street Rush",
+    category:"racing",
+    icon:"🏎️",
+    description:
+    "Balapan arcade dengan lalu lintas, nitro, lap, checkpoint dan sistem skor.",
+    file:"games/game1-racing.html"
+},
+
+{
+    name:"Drift Zone",
+    category:"racing",
+    icon:"🚘",
+    description:
+    "Arena drifting dengan combo, multiplier, handbrake dan target skor.",
+    file:"games/game2-drift.html"
+},
+
+{
+    name:"Arena Strike",
+    category:"action",
+    icon:"⚔️",
+    description:
+    "Pertarungan arena dengan gelombang musuh, senjata dan peningkatan kemampuan.",
+    file:"games/game3-arena.html"
+},
+
+{
+    name:"Last Survivor",
+    category:"action",
+    icon:"🧟",
+    description:
+    "Pertahankan markas dari gelombang musuh dan bangun pertahanan.",
+    file:"games/game4-survivor.html"
+},
+
+{
+    name:"Galaxy Assault",
+    category:"action",
+    icon:"🚀",
+    description:
+    "Pertempuran luar angkasa dengan musuh, asteroid, elite dan boss.",
+    file:"games/game5-space.html"
+},
+
+{
+    name:"Mountain Rally",
+    category:"racing",
+    icon:"🏁",
+    description:
+    "Rally dengan medan sulit, checkpoint, bahan bakar dan kerusakan kendaraan.",
+    file:"games/game6-rally.html"
+},
+
+{
+    name:"Dungeon Run",
+    category:"strategy",
+    icon:"🏰",
+    description:
+    "Dungeon roguelite dengan ruangan acak, musuh, loot dan peningkatan karakter.",
+    file:"games/game7-dungeon.html"
+}
+
+];
+
+const grid =
+document.getElementById("gameGrid");
+
+const search =
+document.getElementById("search");
+
+let currentFilter="all";
+
+function renderGames(){
+
+    const query =
+    search.value.toLowerCase();
+
+    grid.innerHTML="";
+
+    games
+    .filter(game=>{
+
+        const categoryOK =
+        currentFilter==="all" ||
+        game.category===currentFilter;
+
+        const searchOK =
+        game.name
+        .toLowerCase()
+        .includes(query);
+
+        return categoryOK && searchOK;
+
+    })
+    .forEach(game=>{
+
+        const card =
+        document.createElement("article");
+
+        card.className="card";
+
+        card.innerHTML=`
+
+        <div class="thumbnail">
+            ${game.icon}
+        </div>
+
+        <div class="content">
+
+            <span class="category">
+                ${game.category.toUpperCase()}
+            </span>
+
+            <h2>
+                ${game.name}
+            </h2>
+
+            <p>
+                ${game.description}
+            </p>
+
+            <a
+                class="play"
+                href="${game.file}"
+            >
+                MAIN →
+            </a>
+
+        </div>
+
+        `;
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+document
+.querySelectorAll(".filter")
+.forEach(button=>{
+
+    button.onclick=()=>{
+
+        document
+        .querySelectorAll(".filter")
+        .forEach(b=>
+            b.classList.remove("active")
+        );
+
+        button.classList.add("active");
+
+        currentFilter =
+        button.dataset.filter;
+
+        renderGames();
+
+    };
+
+});
+
+search.oninput=renderGames;
+
+renderGames();
+
+</script>
+
+</body>
+</html>

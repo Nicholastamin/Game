@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Arena Strike</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+user-select:none;
+}
+
+html,body{
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#05070c;
+font-family:Arial;
+color:white;
+}
+
+canvas{
+position:fixed;
+inset:0;
+width:100%;
+height:100%;
+}
+
+#hud{
+position:fixed;
+top:12px;
+left:12px;
+right:12px;
+z-index:5;
+display:flex;
+gap:9px;
+flex-wrap:wrap;
+pointer-events:none;
+}
+
+.box{
+background:#0b1220dd;
+border:1px solid #334155;
+border-radius:11px;
+padding:9px 12px;
+}
+
+#xpbar{
+position:fixed;
+left:0;
+bottom:0;
+height:6px;
+width:0%;
+background:#22c55e;
+z-index:10;
+}
+
+#help{
+position:fixed;
+bottom:13px;
+left:50%;
+transform:translateX(-50%);
+color:#b7c4d8;
+z-index:6;
+white-space:nowrap;
+}
+
+#menu{
+position:fixed;
+inset:0;
+z-index:20;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#03050adf;
+}
+
+.panel{
+width:min(550px,92%);
+background:#0c1422;
+border:1px solid #334155;
+border-radius:22px;
+padding:30px;
+text-align:center;
+}
+
+.panel h1{
+margin:0;
+font-size:clamp(38px,9vw,68px);
+}
+
+.panel p{
+color:#aebbd0;
+line-height:1.6;
+}
+
+button{
+background:#2563eb;
+border:0;
+border-radius:11px;
+padding:13px 24px;
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+#upgrade{
+position:fixed;
+inset:0;
+display:none;
+align-items:center;
+justify-content:center;
+background:#02040bd9;
+z-index:15;
+}
+
+.upbox{
+width:min(700px,92%);
+background:#0d1524;
+border:1px solid #334155;
+border-radius:20px;
+padding:25px;
+}
+
+.upgrades{
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(180px,1fr));
+gap:12px;
+}
+
+.upgrade{
+padding:18px;
+border:1px solid #334155;
+border-radius:14px;
+background:#111827;
+cursor:pointer;
+}
+
+.upgrade:hover{
+border-color:#3b82f6;
+}
+
+.upgrade b{
+display:block;
+font-size:19px;
+margin-bottom:7px;
+}
+
+.upgrade span{
+color:#94a3b8;
+font-size:13px;
+}
+
+#controls{
+position:fixed;
+inset:0;
+z-index:8;
+pointer-events:none;
+}
+
+.c{
+position:absolute;
+width:62px;
+height:62px;
+border-radius:50%;
+background:#111827bb;
+border:1px solid #475569;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+pointer-events:auto;
+touch-action:none;
+}
+
+#up{
+bottom:105px;
+left:88px;
+}
+
+#down{
+bottom:25px;
+left:88px;
+}
+
+#left{
+bottom:65px;
+left:20px;
+}
+
+#right{
+bottom:65px;
+left:156px;
+}
+
+#fire{
+bottom:35px;
+right:25px;
+width:82px;
+height:82px;
+}
+
+#dash{
+bottom:130px;
+right:35px;
+}
+
+@media(min-width:800px){
+
+#controls{
+display:none;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+
+<div class="box">
+❤️ <b id="hp">100</b>
+</div>
+
+<div class="box">
+🔫 <b id="ammo">∞</b>
+</div>
+
+<div class="box">
+⭐ LV <b id="level">1</b>
+</div>
+
+<div class="box">
+💀 <b id="kills">0</b>
+</div>
+
+<div class="box">
+🌊 WAVE <b id="wave">1</b>
+</div>
+
+<div class="box">
+SCORE <b id="score">0</b>
+</div>
+
+</div>
+
+<div id="xpbar"></div>
+
+<div id="help">
+WASD / Arrow = gerak • Mouse = arah • Klik/SPACE = tembak • SHIFT = dash
+</div>
+
+<div id="controls">
+
+<div class="c" id="up">▲</div>
+<div class="c" id="down">▼</div>
+<div class="c" id="left">◀</div>
+<div class="c" id="right">▶</div>
+<div class="c" id="fire">FIRE</div>
+<div class="c" id="dash">DASH</div>
+
+</div>
+
+<div id="upgrade">
+
+<div class="upbox">
+
+<h2>LEVEL UP!</h2>
+
+<p>
+Pilih satu peningkatan.
+</p>
+
+<div class="upgrades">
+
+<div class="upgrade" data-up="damage">
+<b>⚔ DAMAGE</b>
+<span>Kerusakan peluru +25%</span>
+</div>
+
+<div class="upgrade" data-up="fire">
+<b>⚡ FIRE RATE</b>
+<span>Menembak lebih cepat</span>
+</div>
+
+<div class="upgrade" data-up="speed">
+<b>👟 SPEED</b>
+<span>Kecepatan gerak +20%</span>
+</div>
+
+<div class="upgrade" data-up="health">
+<b>❤️ HEALTH</b>
+<span>HP maksimum +35</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="menu">
+
+<div class="panel">
+
+<h1>ARENA STRIKE</h1>
+
+<p id="menutext">
+Bertahan dari gelombang musuh,
+kumpulkan XP, naik level dan tingkatkan
+kemampuanmu.
+</p>
+
+<button id="start">
+MULAI
+</button>
+
+<p>
+<a
+href="../index.html"
+style="color:#7dd3fc">
+← Kembali ke Arcade
+</a>
+</p>
+
+</div>
+
+</div>
+
+<script>
+
+const canvas=
+document.getElementById("game");
+
+const ctx=
+canvas.getContext("2d");
+
+let W,H;
+
+function resize(){
+
+W=innerWidth;
+H=innerHeight;
+
+canvas.width=
+W*devicePixelRatio;
+
+canvas.height=
+H*devicePixelRatio;
+
+ctx.setTransform(
+devicePixelRatio,
+0,0,
+devicePixelRatio,
+0,0
+);
+
+}
+
+addEventListener(
+"resize",
+resize
+);
+
+resize();
+
+/* =====================
+INPUT
+===================== */
+
+const keys={};
+
+addEventListener(
+"keydown",
+e=>{
+
+keys[e.key.toLowerCase()]=true;
+
+if(
+e.key===" " ||
+e.key.startsWith("Arrow")
+)
+e.preventDefault();
+
+});
+
+addEventListener(
+"keyup",
+e=>{
+
+keys[e.key.toLowerCase()]=false;
+
+});
+
+let mouse={
+x:W/2,
+y:H/2,
+down:false
+};
+
+addEventListener(
+"mousemove",
+e=>{
+
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+
+});
+
+addEventListener(
+"mousedown",
+()=>mouse.down=true
+);
+
+addEventListener(
+"mouseup",
+()=>mouse.down=false
+);
+
+function bind(id,key){
+
+const el=
+document.getElementById(id);
+
+el.addEventListener(
+"pointerdown",
+e=>{
+
+e.preventDefault();
+
+keys[key]=true;
+
+if(key==="space")
+mouse.down=true;
+
+});
+
+["pointerup",
+"pointercancel",
+"pointerleave"]
+.forEach(type=>{
+
+el.addEventListener(
+type,
+e=>{
+
+e.preventDefault();
+
+keys[key]=false;
+
+if(key==="space")
+mouse.down=false;
+
+});
+
+});
+
+}
+
+bind("up","arrowup");
+bind("down","arrowdown");
+bind("left","arrowleft");
+bind("right","arrowright");
+bind("fire","space");
+bind("dash","shift");
+
+/* =====================
+PLAYER
+===================== */
+
+let player;
+
+let bullets=[];
+let enemies=[];
+let particles=[];
+
+let wave=1;
+let kills=0;
+let score=0;
+
+let level=1;
+let xp=0;
+let xpNeeded=100;
+
+let spawnTimer=0;
+let waveTimer=0;
+
+let running=false;
+let paused=false;
+
+function reset(){
+
+player={
+
+x:W/2,
+y:H/2,
+
+hp:100,
+maxHp:100,
+
+speed:210,
+
+damage:25,
+
+fireRate:.23,
+
+fireTimer:0,
+
+dash:0,
+
+dashCooldown:0
+
+};
+
+bullets=[];
+enemies=[];
+particles=[];
+
+wave=1;
+kills=0;
+score=0;
+
+level=1;
+xp=0;
+xpNeeded=100;
+
+spawnTimer=0;
+waveTimer=0;
+
+}
+
+/* =====================
+SPAWN
+===================== */
+
+function spawnEnemy(){
+
+const side=
+Math.floor(
+Math.random()*4
+);
+
+let x,y;
+
+if(side===0){
+
+x=-30;
+y=Math.random()*H;
+
+}
+
+if(side===1){
+
+x=W+30;
+y=Math.random()*H;
+
+}
+
+if(side===2){
+
+x=Math.random()*W;
+y=-30;
+
+}
+
+if(side===3){
+
+x=Math.random()*W;
+y=H+30;
+
+}
+
+const boss=
+wave%5===0 &&
+enemies.length===0;
+
+const hp=
+boss
+?900+wave*150
+:45+wave*12;
+
+enemies.push({
+
+x:x,
+y:y,
+
+hp:hp,
+maxHp:hp,
+
+speed:
+boss
+?38
+:45+Math.random()*25+wave*2,
+
+radius:
+boss?35:15+Math.random()*7,
+
+boss:boss,
+
+hit:0
+
+});
+
+}
+
+/* =====================
+UPDATE
+===================== */
+
+function update(dt){
+
+if(paused)
+return;
+
+/* movement */
+
+let dx=
+(keys.d||keys.arrowright?1:0)-
+(keys.a||keys.arrowleft?1:0);
+
+let dy=
+(keys.s||keys.arrowdown?1:0)-
+(keys.w||keys.arrowup?1:0);
+
+let len=
+Math.hypot(dx,dy);
+
+if(len>0){
+
+dx/=len;
+dy/=len;
+
+player.x+=
+dx*player.speed*dt;
+
+player.y+=
+dy*player.speed*dt;
+
+}
+
+/* bounds */
+
+player.x=
+Math.max(
+25,
+Math.min(
+W-25,
+player.x
+)
+);
+
+player.y=
+Math.max(
+60,
+Math.min(
+H-25,
+player.y
+)
+);
+
+/* dash */
+
+if(
+keys.shift &&
+player.dashCooldown<=0
+){
+
+const d=
+Math.hypot(dx,dy);
+
+if(d>0){
+
+player.x+=
+dx*130;
+
+player.y+=
+dy*130;
+
+player.dashCooldown=2;
+
+}
+
+}
+
+player.dashCooldown=
+Math.max(
+0,
+player.dashCooldown-dt
+);
+
+/* shooting */
+
+player.fireTimer-=dt;
+
+const shooting=
+mouse.down ||
+keys.space;
+
+if(
+shooting &&
+player.fireTimer<=0
+){
+
+player.fireTimer=
+player.fireRate;
+
+const angle=
+Math.atan2(
+mouse.y-player.y,
+mouse.x-player.x
+);
+
+bullets.push({
+
+x:player.x,
+y:player.y,
+
+vx:Math.cos(angle)*650,
+vy:Math.sin(angle)*650,
+
+damage:player.damage,
+
+life:1.5
+
+});
+
+}
+
+/* bullets */
+
+for(
+let i=bullets.length-1;
+i>=0;
+i--
+){
+
+const b=
+bullets[i];
+
+b.x+=b.vx*dt;
+b.y+=b.vy*dt;
+
+b.life-=dt;
+
+if(
+b.life<=0 ||
+b.x<-30 ||
+b.x>W+30 ||
+b.y<-30 ||
+b.y>H+30
+){
+
+bullets.splice(i,1);
+continue;
+
+}
+
+/* collision */
+
+for(
+let j=enemies.length-1;
+j>=0;
+j--
+){
+
+const e=
+enemies[j];
+
+const d=
+Math.hypot(
+b.x-e.x,
+b.y-e.y
+);
+
+if(
+d<
+e.radius+6
+){
+
+e.hp-=b.damage;
+
+e.hit=.08;
+
+bullets.splice(i,1);
+
+if(e.hp<=0){
+
+kills++;
+
+score+=
+e.boss
+?3000
+:100+wave*10;
+
+gainXP(
+e.boss
+?250
+:20+wave*2
+);
+
+explode(
+e.x,
+e.y,
+e.boss
+?35
+:12
+);
+
+enemies.splice(
+j,
+1
+);
+
+}
+
+break;
+
+}
+
+}
+
+}
+
+/* enemies */
+
+for(
+const e of enemies
+){
+
+const angle=
+Math.atan2(
+player.y-e.y,
+player.x-e.x
+);
+
+e.x+=
+Math.cos(angle)*
+e.speed*
+dt;
+
+e.y+=
+Math.sin(angle)*
+e.speed*
+dt;
+
+e.hit=
+Math.max(
+0,
+e.hit-dt
+);
+
+const d=
+Math.hypot(
+player.x-e.x,
+player.y-e.y
+);
+
+if(
+d<
+player.radius+e.radius
+){
+
+player.hp-=
+(e.boss?35:18)*
+dt;
+
+}
+
+}
+
+/* spawning */
+
+spawnTimer-=dt;
+
+const maxEnemies=
+8+
+wave*2;
+
+if(
+spawnTimer<=0 &&
+enemies.length<
+maxEnemies
+){
+
+spawnTimer=
+Math.max(
+.25,
+1.1-
+wave*.025
+);
+
+spawnEnemy();
+
+}
+
+/* wave */
+
+waveTimer+=dt;
+
+if(
+waveTimer>30
+){
+
+wave++;
+
+waveTimer=0;
+
+score+=
+wave*500;
+
+}
+
+/* particles */
+
+for(
+let i=particles.length-1;
+i>=0;
+i--
+){
+
+const p=
+particles[i];
+
+p.x+=p.vx*dt;
+p.y+=p.vy*dt;
+
+p.life-=dt;
+
+if(p.life<=0)
+particles.splice(i,1);
+
+}
+
+/* HUD */
+
+document.getElementById(
+"hp"
+).textContent=
+Math.max(
+0,
+Math.floor(
+player.hp
+)
+);
+
+document.getElementById(
+"level"
+).textContent=
+level;
+
+document.getElementById(
+"kills"
+).textContent=
+kills;
+
+document.getElementById(
+"wave"
+).textContent=
+wave;
+
+document.getElementById(
+"score"
+).textContent=
+Math.floor(score)
+.toLocaleString();
+
+document.getElementById(
+"xpbar"
+).style.width=
+(
+xp/xpNeeded*100
+)+"%";
+
+if(
+player.hp<=0
+){
+
+endGame();
+
+}
+
+}
+
+player.radius=17;
+
+/* =====================
+XP
+===================== */
+
+function gainXP(amount){
+
+xp+=amount;
+
+while(
+xp>=xpNeeded
+){
+
+xp-=xpNeeded;
+
+level++;
+
+xpNeeded=
+Math.floor(
+xpNeeded*1.35
+);
+
+openUpgrade();
+
+}
+
+}
+
+function openUpgrade(){
+
+paused=true;
+
+document.getElementById(
+"upgrade"
+).style.display=
+"flex";
+
+}
+
+document
+.querySelectorAll(".upgrade")
+.forEach(card=>{
+
+card.onclick=()=>{
+
+const type=
+card.dataset.up;
+
+if(type==="damage")
+player.damage*=1.25;
+
+if(type==="fire")
+player.fireRate*=.82;
+
+if(type==="speed")
+player.speed*=1.2;
+
+if(type==="health"){
+
+player.maxHp+=35;
+
+player.hp+=35;
+
+}
+
+document.getElementById(
+"upgrade"
+).style.display=
+"none";
+
+paused=false;
+
+};
+
+});
+
+/* =====================
+PARTICLES
+===================== */
+
+function explode(x,y,count){
+
+for(
+let i=0;
+i<count;
+i++
+){
+
+const a=
+Math.random()*
+Math.PI*2;
+
+const speed=
+40+
+Math.random()*180;
+
+particles.push({
+
+x:x,
+y:y,
+
+vx:Math.cos(a)*speed,
+vy:Math.sin(a)*speed,
+
+life:
+.3+
+Math.random()*.5
+
+});
+
+}
+
+}
+
+/* =====================
+DRAW
+===================== */
+
+function drawBackground(){
+
+ctx.fillStyle="#090d16";
+
+ctx.fillRect(
+0,0,W,H
+);
+
+ctx.strokeStyle="#141e30";
+
+for(
+let x=0;
+x<W;
+x+=45
+){
+
+ctx.beginPath();
+
+ctx.moveTo(x,0);
+ctx.lineTo(x,H);
+
+ctx.stroke();
+
+}
+
+for(
+let y=0;
+y<H;
+y+=45
+){
+
+ctx.beginPath();
+
+ctx.moveTo(0,y);
+ctx.lineTo(W,y);
+
+ctx.stroke();
+
+}
+
+}
+
+function drawBullets(){
+
+ctx.fillStyle="#fde047";
+
+for(
+const b of bullets
+){
+
+ctx.beginPath();
+
+ctx.arc(
+b.x,
+b.y,
+4,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+}
+
+}
+
+function drawEnemies(){
+
+for(
+const e of enemies
+){
+
+ctx.save();
+
+ctx.translate(
+e.x,
+e.y
+);
+
+ctx.fillStyle=
+e.boss
+?"#a855f7"
+:"#ef4444";
+
+ctx.beginPath();
+
+ctx.arc(
+0,
+0,
+e.radius,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+if(e.boss){
+
+ctx.strokeStyle="#f0abfc";
+
+ctx.lineWidth=3;
+
+ctx.beginPath();
+
+ctx.arc(
+0,
+0,
+e.radius+7,
+0,
+Math.PI*2
+);
+
+ctx.stroke();
+
+}
+
+/* HP */
+
+ctx.fillStyle="#111";
+
+ctx.fillRect(
+-e.radius,
+-e.radius-9,
+e.radius*2,
+4
+);
+
+ctx.fillStyle="#22c55e";
+
+ctx.fillRect(
+-e.radius,
+-e.radius-9,
+e.radius*2*
+Math.max(
+0,
+e.hp/e.maxHp
+),
+4
+);
+
+ctx.restore();
+
+}
+
+}
+
+function drawPlayer(){
+
+const angle=
+Math.atan2(
+mouse.y-player.y,
+mouse.x-player.x
+);
+
+ctx.save();
+
+ctx.translate(
+player.x,
+player.y
+);
+
+ctx.rotate(
+angle
+);
+
+ctx.fillStyle="#38bdf8";
+
+ctx.beginPath();
+
+ctx.moveTo(
+23,
+0
+);
+
+ctx.lineTo(
+-15,
+-15
+);
+
+ctx.lineTo(
+-10,
+0
+);
+
+ctx.lineTo(
+-15,
+15
+);
+
+ctx.closePath();
+
+ctx.fill();
+
+ctx.fillStyle="#e0f2fe";
+
+ctx.beginPath();
+
+ctx.arc(
+5,
+0,
+5,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+ctx.restore();
+
+}
+
+function drawParticles(){
+
+for(
+const p of particles
+){
+
+ctx.fillStyle=
+"rgba(251,191,36,"+
+Math.max(
+0,
+p.life
+)+")";
+
+ctx.beginPath();
+
+ctx.arc(
+p.x,
+p.y,
+3,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+}
+
+}
+
+function draw(){
+
+drawBackground();
+
+drawParticles();
+
+drawBullets();
+
+drawEnemies();
+
+drawPlayer();
+
+}
+
+/* =====================
+GAME LOOP
+===================== */
+
+function loop(t){
+
+if(!running)
+return;
+
+const dt=
+Math.min(
+(t-last)/1000,
+.033
+);
+
+last=t;
+
+update(dt);
+
+draw();
+
+requestAnimationFrame(
+loop
+);
+
+}
+
+/* =====================
+END
+===================== */
+
+function endGame(){
+
+running=false;
+
+document.getElementById(
+"menutext"
+).innerHTML=
+`
+💀 GAME OVER<br><br>
+Wave: ${wave}<br>
+Kills: ${kills}<br>
+Score: ${Math.floor(score).toLocaleString()}
+`;
+
+document.getElementById(
+"start"
+).textContent=
+"MAIN LAGI";
+
+document.getElementById(
+"menu"
+).style.display=
+"flex";
+
+}
+
+/* =====================
+START
+===================== */
+
+document.getElementById(
+"start"
+).onclick=()=>{
+
+reset();
+
+document.getElementById(
+"menu"
+).style.display=
+"none";
+
+running=true;
+paused=false;
+
+last=
+performance.now();
+
+requestAnimationFrame(
+loop
+);
+
+};
+
+reset();
+
+</script>
+
+</body>
+</html>

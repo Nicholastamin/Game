@@ -532,6 +532,10 @@ canvas{
 }
 
 .control{
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  touch-action:none;
   pointer-events:auto;
 
   position:absolute;
@@ -579,6 +583,8 @@ canvas{
 
 #gasBtn{
   left:166px;
+  width:62px;
+  height:62px;
   bottom:max(
     22px,
     env(safe-area-inset-bottom)
@@ -601,12 +607,14 @@ canvas{
 
 #nitroBtn{
   right:18px;
+  width:62px;
+  height:62px;
   bottom:max(
     22px,
     env(safe-area-inset-bottom)
   );
 
-  font-size:11px;
+  font-size:28px;
 
   background:
     rgba(8,145,178,.75);
@@ -2327,6 +2335,7 @@ let playerOffset=0;
 
 
 let steer=0;
+let steerTarget=0;
 
 let throttle=false;
 
@@ -3141,6 +3150,27 @@ function createTrack(){
       )
 
     );
+
+  }
+
+
+  /* TRACK PHYSICAL LENGTH */
+  TRACK_LENGTH=0;
+
+  for(
+    let i=0;
+    i<TRACK_COUNT;
+    i++
+  ){
+
+    TRACK_LENGTH+=
+      trackPoints[i]
+        .distanceTo(
+          trackPoints[
+            (i+1)%
+            TRACK_COUNT
+          ]
+        );
 
   }
 
@@ -4314,6 +4344,9 @@ function replacePlayer(){
   steer=
     0;
 
+  steerTarget=
+    0;
+
 
   updatePlayerTransform();
 
@@ -5193,21 +5226,37 @@ function updatePlayer(
 
   /* ACCELERATION */
 
-  if(throttle){
+  /* SMOOTH ACCELERATION */
+  const acceleration=
+    data.accel*
+    1.15*
+    engineUpgrade;
 
-    playerSpeed+=
-      data.accel*
-      .75*
-      engineUpgrade*
-      dt;
+  const targetSpeed=
+    throttle
+      ? maxSpeed
+      : 0;
 
-  }else{
+  const response=
+    throttle
+      ? 1-
+        Math.exp(
+          -acceleration/
+          95*
+          dt
+        )
+      : 1-
+        Math.exp(
+          -2.8*
+          dt
+        );
 
-    playerSpeed-=
-      18*
-      dt;
-
-  }
+  playerSpeed+=
+    (
+      targetSpeed-
+      playerSpeed
+    )*
+    response;
 
 
   /* BRAKE */
@@ -5272,6 +5321,20 @@ function updatePlayer(
     );
 
 
+  /* SMOOTH STEERING */
+  steer+=
+    (
+      steerTarget-
+      steer
+    )*
+    (
+      1-
+      Math.exp(
+        -10*
+        dt
+      )
+    );
+
   /* DRIFT */
 
   drifting=
@@ -5332,9 +5395,24 @@ function updatePlayer(
 
   /* PROGRESS */
 
+  /* SPEED -> TRACK MOVEMENT
+     HUD speed is treated as km/h.
+     Convert to metres/second, then to track-index units. */
+  const metersPerSecond=
+    playerSpeed/
+    3.6;
+
+  const progressPerSecond=
+    TRACK_LENGTH>0
+      ? (
+          metersPerSecond/
+          TRACK_LENGTH
+        )*
+        TRACK_COUNT
+      : 0;
+
   playerProgress+=
-    playerSpeed*
-    .055*
+    progressPerSecond*
     dt;
 
 
@@ -6992,15 +7070,15 @@ function holdButton(
 
 holdButton(
   "leftBtn",
-  ()=>steer=-1,
-  ()=>steer=0
+  ()=>steerTarget=-1,
+  ()=>steerTarget=0
 );
 
 
 holdButton(
   "rightBtn",
-  ()=>steer=1,
-  ()=>steer=0
+  ()=>steerTarget=1,
+  ()=>steerTarget=0
 );
 
 

@@ -4366,6 +4366,7 @@ function updatePlayerTransform(){
       tangent.x,
       tangent.z
     )+
+    Math.PI+
     steer*.22;
 
 
@@ -4592,7 +4593,8 @@ function updateRivals(
       Math.atan2(
         tangent.x,
         tangent.z
-      );
+      )+
+      Math.PI;
 
 
     for(
@@ -4754,7 +4756,8 @@ function updateTraffic(
       Math.atan2(
         tangent.x,
         tangent.z
-      );
+      )+
+      Math.PI;
 
   }
 
@@ -5194,14 +5197,14 @@ function updatePlayer(
 
     playerSpeed+=
       data.accel*
-      .42*
+      .75*
       engineUpgrade*
       dt;
 
   }else{
 
     playerSpeed-=
-      30*
+      18*
       dt;
 
   }
@@ -5755,49 +5758,46 @@ function updateCamera(
   }
 
 
-  const index=
-    Math.floor(
-      wrap(
-        playerProgress,
-        TRACK_COUNT
-      )
+  const forward=
+    new THREE.Vector3(
+      0,
+      0,
+      -1
     );
 
 
-  const tangent=
-    trackTangents[index];
-
-
-  const behind=
-    tangent.clone()
-      .multiplyScalar(
-        -12
-      );
+  forward
+    .applyQuaternion(
+      player.quaternion
+    )
+    .normalize();
 
 
   const desired=
     player.position
       .clone()
-      .add(
-        behind
+      .addScaledVector(
+        forward,
+        -13
       );
 
 
   desired.y=
     player.position.y+
-    6.5;
+    6.2;
 
 
-  camera.position.lerp(
-
-    desired,
-
+  const smooth=
     1-
     Math.pow(
       .001,
       dt
-    )
+    );
 
+
+  camera.position.lerp(
+    desired,
+    smooth
   );
 
 
@@ -5823,17 +5823,21 @@ function updateCamera(
   }
 
 
-  const look=
+  const lookTarget=
     player.position
-      .clone();
+      .clone()
+      .addScaledVector(
+        forward,
+        12
+      );
 
 
-  look.y+=
-    1.1;
+  lookTarget.y+=
+    1.2;
 
 
   camera.lookAt(
-    look
+    lookTarget
   );
 
 
@@ -6939,6 +6943,14 @@ function holdButton(
 
       event.preventDefault();
 
+      if(button.setPointerCapture){
+
+        button.setPointerCapture(
+          event.pointerId
+        );
+
+      }
+
       down();
 
     }
@@ -6953,18 +6965,25 @@ function holdButton(
 
       up();
 
+      if(
+        button.hasPointerCapture &&
+        button.hasPointerCapture(
+          event.pointerId
+        )
+      ){
+
+        button.releasePointerCapture(
+          event.pointerId
+        );
+
+      }
+
     }
   );
 
 
   button.addEventListener(
     "pointercancel",
-    up
-  );
-
-
-  button.addEventListener(
-    "pointerleave",
     up
   );
 

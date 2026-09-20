@@ -8,7 +8,7 @@ content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,vie
 
 <meta name="theme-color" content="#050816">
 
-<title>PixelForge Racing V8</title>
+<title>PixelForge Racing V9 Gameplay Fixed</title>
 
 <style>
 *{
@@ -825,6 +825,20 @@ canvas{
     display:none!important;
   }
 }
+
+/* FINAL GAMEPLAY FIXES */
+#minimap{
+  width:78px!important;
+  height:54px!important;
+  right:10px!important;
+  bottom:120px!important;
+}
+#gas,#nitro,#brake,#left,#right{
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  touch-action:none;
+}
 </style>
 
 <script type="importmap">
@@ -868,7 +882,7 @@ Pixel<span>Forge</span> Racing
 </div>
 
 <div style="color:#64748b;font-size:12px">
-V8 • 3D
+V9 • 3D
 </div>
 
 </div>
@@ -1102,7 +1116,7 @@ Upgrade
 
 <div class="upgrade">
 
-<strong>NITRO</strong>
+<strong>⚡</strong>
 
 <small id="up-nitro">
 Lv. 1
@@ -1321,7 +1335,7 @@ id="rightBtn">
 <button
 class="control"
 id="gasBtn">
-▲ GAS
+▲
 </button>
 
 <button
@@ -1333,7 +1347,7 @@ BRAKE
 <button
 class="control"
 id="nitroBtn">
-NITRO
+⚡
 </button>
 
 </div>
@@ -1851,7 +1865,7 @@ function renderCars(){
           </span>
 
           <span>
-            NITRO ${car.nitro}
+            ⚡ ${car.nitro}
           </span>
 
         </div>
@@ -2396,6 +2410,8 @@ const ROAD_WIDTH=
 
 const WORLD_SIZE=
   700;
+
+let TRACK_LENGTH=0;
 
 
 /* =======================================================
@@ -4234,7 +4250,7 @@ function createCar(
   }
 
 
-  /* NITRO FLAME */
+  /* ⚡ FLAME */
 
   const flame=
     new THREE.Mesh(
@@ -4453,7 +4469,7 @@ function updatePlayerTransform(){
   }
 
 
-  /* NITRO */
+  /* ⚡ */
 
   player.userData.flame.visible=
     nitroPressed &&
@@ -5274,7 +5290,7 @@ function updatePlayer(
   }
 
 
-  /* NITRO */
+  /* ⚡ */
 
   if(
     nitroPressed &&

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07111f">
 
 <title>PixelForge Racing V5</title>
@@ -12,6 +12,7 @@
  box-sizing:border-box;
  user-select:none;
  -webkit-user-select:none;
+ -webkit-touch-callout:none;
  -webkit-tap-highlight-color:transparent;
 }
 
@@ -22,6 +23,12 @@ html,body{
  overflow:hidden;
  background:#050a12;
  font-family:Arial,Helvetica,sans-serif;
+ touch-action:none;
+}
+
+body{
+ position:fixed;
+ inset:0;
 }
 
 canvas{
@@ -33,18 +40,29 @@ canvas{
  touch-action:none;
 }
 
-/* MENU */
+button{
+ -webkit-appearance:none;
+ appearance:none;
+ touch-action:none;
+ cursor:pointer;
+}
+
+/* =========================
+MENU
+========================= */
 
 #menu{
  position:fixed;
  inset:0;
  z-index:100;
  overflow-y:auto;
+ -webkit-overflow-scrolling:touch;
  padding:20px 12px 30px;
  background:
  radial-gradient(circle at 50% 10%,rgba(0,180,255,.28),transparent 42%),
  linear-gradient(#06111e,#02060b);
  color:white;
+ touch-action:pan-y;
 }
 
 .menuBox{
@@ -116,6 +134,7 @@ canvas{
  border:2px solid transparent;
  color:white;
  cursor:pointer;
+ touch-action:manipulation;
 }
 
 .carChoice.selected{
@@ -241,6 +260,7 @@ canvas{
  color:white;
  font-size:18px;
  font-weight:900;
+ touch-action:manipulation;
 }
 
 .help{
@@ -250,12 +270,14 @@ canvas{
  line-height:1.6;
 }
 
-/* HUD */
+/* =========================
+HUD
+========================= */
 
 #hud{
  display:none;
  position:fixed;
- z-index:20;
+ z-index:200;
  top:12px;
  left:12px;
  right:65px;
@@ -304,72 +326,92 @@ canvas{
  box-shadow:0 0 12px #00cfff;
 }
 
+/* =========================
+PAUSE
+========================= */
+
 #pauseBtn{
  display:none;
  position:fixed;
- z-index:30;
- top:12px;
+ z-index:10000;
+ top:max(12px,env(safe-area-inset-top));
  right:12px;
- width:45px;
- height:45px;
- border-radius:13px;
- border:1px solid rgba(255,255,255,.15);
- background:rgba(4,12,23,.82);
+ width:48px;
+ height:48px;
+ border-radius:14px;
+ border:1px solid rgba(255,255,255,.2);
+ background:rgba(4,12,23,.9);
  color:white;
  font-size:20px;
  font-weight:bold;
+ pointer-events:auto;
+ touch-action:none;
 }
 
-/* CONTROLS */
+/* =========================
+CONTROLS
+========================= */
 
 #controls{
  display:none;
  position:fixed;
- z-index:25;
+ z-index:10000;
  left:0;
  right:0;
- bottom:17px;
+ bottom:max(15px,env(safe-area-inset-bottom));
  padding:0 15px;
  justify-content:space-between;
- pointer-events:none;
+ align-items:flex-end;
+ pointer-events:auto;
+ touch-action:none;
 }
 
 .controlGroup{
  display:flex;
  gap:9px;
  pointer-events:auto;
-}
-
-.control{
- width:60px;
- height:60px;
- border-radius:18px;
- border:1px solid rgba(255,255,255,.18);
- background:rgba(4,13,25,.75);
- color:white;
- font-size:23px;
- font-weight:bold;
- backdrop-filter:blur(8px);
  touch-action:none;
 }
 
-.control:active{
- transform:scale(.92);
- background:#155b7e;
+.control{
+ width:62px;
+ height:62px;
+ border-radius:19px;
+ border:1px solid rgba(255,255,255,.2);
+ background:rgba(4,13,25,.86);
+ color:white;
+ font-size:23px;
+ font-weight:bold;
+ backdrop-filter:blur(9px);
+ -webkit-backdrop-filter:blur(9px);
+ touch-action:none;
+ pointer-events:auto;
+ position:relative;
+ z-index:10001;
+ padding:0;
 }
 
-/* OVERLAY */
+.control:active,
+.control.pressed{
+ transform:scale(.92);
+ background:#155b7e;
+ box-shadow:
+  0 0 20px rgba(0,200,255,.35);
+}
 
 #pauseMenu,
 #finish{
  display:none;
  position:fixed;
  inset:0;
- z-index:200;
+ z-index:20000;
  align-items:center;
  justify-content:center;
  background:rgba(0,0,0,.68);
  backdrop-filter:blur(9px);
+ -webkit-backdrop-filter:blur(9px);
+ pointer-events:auto;
+ touch-action:none;
 }
 
 .dialog{
@@ -397,6 +439,7 @@ canvas{
  background:#243b53;
  color:white;
  font-weight:bold;
+ touch-action:manipulation;
 }
 
 .dialog .primary{
@@ -408,7 +451,7 @@ canvas{
  display:none;
  position:fixed;
  inset:0;
- z-index:80;
+ z-index:15000;
  align-items:center;
  justify-content:center;
  color:white;
@@ -419,33 +462,76 @@ canvas{
 }
 
 @media(max-width:799px){
- #controls{display:flex}
+ #controls{
+  display:flex;
+ }
 }
 
 @media(min-width:800px){
- #controls{display:none!important}
+ #controls{
+  display:none!important;
+ }
 }
 
 @media(max-width:450px){
- .cars{grid-template-columns:repeat(2,1fr)}
- .options{grid-template-columns:repeat(2,1fr)}
+
+ .cars{
+  grid-template-columns:repeat(2,1fr);
+ }
+
+ .options{
+  grid-template-columns:repeat(2,1fr);
+ }
+
+ .control{
+  width:58px;
+  height:58px;
+ }
+
+}
+
+@media(max-height:500px) and (orientation:landscape){
+
+ #controls{
+  bottom:8px;
+ }
+
+ .control{
+  width:52px;
+  height:52px;
+ }
+
 }
 </style>
 </head>
 
 <body>
 
+<!-- =========================
+MENU
+========================= -->
+
 <div id="menu">
+
 <div class="menuBox">
 
 <div class="logo">PIXELFORGE</div>
 <div class="logo2">RACING</div>
-<div class="subtitle">3D STREET RACING • V5 HIGH GRAPHICS</div>
 
-<div class="money">💰 <span id="coins">1000</span></div>
+<div class="subtitle">
+3D STREET RACING • V5 HIGH GRAPHICS
+</div>
+
+<div class="money">
+💰 <span id="coins">1000</span>
+</div>
+
 
 <div class="section">
-<div class="sectionTitle">PILIH MOBIL</div>
+
+<div class="sectionTitle">
+PILIH MOBIL
+</div>
 
 <div class="cars">
 
@@ -481,115 +567,253 @@ canvas{
 
 </div>
 
-<div class="stat">TOP SPEED
-<div class="statBar"><div id="speedStat" class="statFill"></div></div>
+
+<div class="stat">
+TOP SPEED
+<div class="statBar">
+<div id="speedStat" class="statFill"></div>
+</div>
 </div>
 
-<div class="stat">ACCELERATION
-<div class="statBar"><div id="accelStat" class="statFill"></div></div>
+<div class="stat">
+ACCELERATION
+<div class="statBar">
+<div id="accelStat" class="statFill"></div>
+</div>
 </div>
 
-<div class="stat">HANDLING
-<div class="statBar"><div id="handlingStat" class="statFill"></div></div>
+<div class="stat">
+HANDLING
+<div class="statBar">
+<div id="handlingStat" class="statFill"></div>
+</div>
 </div>
 
-<div class="stat">NITRO
-<div class="statBar"><div id="nitroStat" class="statFill"></div></div>
+<div class="stat">
+NITRO
+<div class="statBar">
+<div id="nitroStat" class="statFill"></div>
+</div>
 </div>
 
 </div>
+
 
 <div class="section">
-<div class="sectionTitle">KESULITAN AI</div>
+
+<div class="sectionTitle">
+KESULITAN AI
+</div>
 
 <div class="options">
-<button class="option" data-difficulty="easy">EASY</button>
-<button class="option selected" data-difficulty="normal">NORMAL</button>
-<button class="option" data-difficulty="hard">HARD</button>
-<button class="option" data-difficulty="extreme">EXTREME</button>
-</div>
+
+<button class="option" data-difficulty="easy">
+EASY
+</button>
+
+<button class="option selected" data-difficulty="normal">
+NORMAL
+</button>
+
+<button class="option" data-difficulty="hard">
+HARD
+</button>
+
+<button class="option" data-difficulty="extreme">
+EXTREME
+</button>
+
 </div>
 
+</div>
+
+
 <div class="section">
-<div class="sectionTitle">JUMLAH LAP</div>
+
+<div class="sectionTitle">
+JUMLAH LAP
+</div>
 
 <div class="options">
-<button class="option" data-laps="1">1 LAP</button>
-<button class="option selected" data-laps="3">3 LAP</button>
-<button class="option" data-laps="5">5 LAP</button>
-<button class="option" data-laps="10">10 LAP</button>
-</div>
+
+<button class="option" data-laps="1">
+1 LAP
+</button>
+
+<button class="option selected" data-laps="3">
+3 LAP
+</button>
+
+<button class="option" data-laps="5">
+5 LAP
+</button>
+
+<button class="option" data-laps="10">
+10 LAP
+</button>
+
 </div>
 
+</div>
+
+
 <div class="section">
-<div class="sectionTitle">UPGRADE MOBIL</div>
+
+<div class="sectionTitle">
+UPGRADE MOBIL
+</div>
+
 <div id="upgradeList"></div>
+
 </div>
 
-<button id="startBtn">🏁 MULAI BALAP</button>
+
+<button id="startBtn">
+🏁 MULAI BALAP
+</button>
 
 <div class="help">
 PC: W/A/S/D atau Arrow Keys • Shift = Nitro<br>
-HP: gunakan tombol di layar
+HP: tahan tombol di layar
 </div>
 
 </div>
 </div>
 
+
+<!-- =========================
+HUD
+========================= -->
 
 <div id="hud">
+
 <div class="hudRow">
 
 <div class="hudBox">
-<div id="speed" class="speed">0 KM/H</div>
-<div id="lap" class="small">LAP 1 / 3</div>
-<div id="position" class="small">POSISI 1 / 8</div>
+
+<div id="speed" class="speed">
+0 KM/H
 </div>
 
+<div id="lap" class="small">
+LAP 1 / 3
+</div>
+
+<div id="position" class="small">
+POSISI 1 / 8
+</div>
+
+</div>
+
+
 <div class="hudBox">
+
 <div>⚡ NITRO</div>
+
 <div id="nitroBar">
 <div id="nitroFill"></div>
 </div>
+
 </div>
 
 </div>
 </div>
 
-<button id="pauseBtn">Ⅱ</button>
+
+<button id="pauseBtn">
+Ⅱ
+</button>
+
+
+<!-- =========================
+MOBILE CONTROLS
+========================= -->
 
 <div id="controls">
 
 <div class="controlGroup">
-<button id="left" class="control">◀</button>
-<button id="right" class="control">▶</button>
+
+<button id="left" class="control">
+◀
+</button>
+
+<button id="right" class="control">
+▶
+</button>
+
 </div>
+
 
 <div class="controlGroup">
-<button id="brake" class="control">▼</button>
-<button id="gas" class="control">▲</button>
-<button id="boost" class="control">⚡</button>
+
+<button id="brake" class="control">
+▼
+</button>
+
+<button id="gas" class="control">
+▲
+</button>
+
+<button id="boost" class="control">
+⚡
+</button>
+
 </div>
 
 </div>
+
+
+<!-- =========================
+PAUSE
+========================= -->
 
 <div id="pauseMenu">
+
 <div class="dialog">
+
 <h1>PAUSE</h1>
-<button id="resume" class="primary">▶ LANJUTKAN</button>
-<button id="restart">🔄 MULAI ULANG</button>
-<button id="backArcade">🏠 KEMBALI KE ARCADE</button>
-</div>
+
+<button id="resume" class="primary">
+▶ LANJUTKAN
+</button>
+
+<button id="restart">
+🔄 MULAI ULANG
+</button>
+
+<button id="backArcade">
+🏠 KEMBALI KE ARCADE
+</button>
+
 </div>
 
+</div>
+
+
+<!-- =========================
+FINISH
+========================= -->
+
 <div id="finish">
+
 <div class="dialog">
+
 <h1>🏁 FINISH!</h1>
+
 <div id="result"></div>
-<button id="again" class="primary">🔄 BALAP LAGI</button>
-<button id="finishArcade">🏠 KEMBALI KE ARCADE</button>
+
+<button id="again" class="primary">
+🔄 BALAP LAGI
+</button>
+
+<button id="finishArcade">
+🏠 KEMBALI KE ARCADE
+</button>
+
 </div>
+
 </div>
+
 
 <div id="countdown"></div>
 
@@ -616,11 +840,12 @@ from
 "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/postprocessing/OutputPass.js";
 
 
-/* =====================================================
+/* =========================
 DATA
-===================================================== */
+========================= */
 
 const carData=[
+
 {
  name:"FALCON GT",
  color:0x1687ff,
@@ -629,6 +854,7 @@ const carData=[
  handling:72,
  nitro:75
 },
+
 {
  name:"VIPER R",
  color:0xef3030,
@@ -637,6 +863,7 @@ const carData=[
  handling:61,
  nitro:68
 },
+
 {
  name:"PHANTOM X",
  color:0xa855f7,
@@ -645,6 +872,7 @@ const carData=[
  handling:91,
  nitro:83
 },
+
 {
  name:"BLAZE RS",
  color:0xf59e0b,
@@ -653,6 +881,7 @@ const carData=[
  handling:66,
  nitro:72
 },
+
 {
  name:"TORQUE Z",
  color:0x22c55e,
@@ -661,6 +890,7 @@ const carData=[
  handling:78,
  nitro:95
 },
+
 {
  name:"AURORA",
  color:0xe5e7eb,
@@ -669,11 +899,14 @@ const carData=[
  handling:85,
  nitro:87
 }
+
 ];
+
 
 const upgrades=[];
 
 for(let i=0;i<carData.length;i++){
+
  upgrades.push({
   engine:0,
   speed:0,
@@ -681,18 +914,24 @@ for(let i=0;i<carData.length;i++){
   nitro:0,
   brake:0
  });
+
 }
 
 
-/* =====================================================
+/* =========================
 SAVE
-===================================================== */
+========================= */
 
 let coins=
-Number(localStorage.getItem("pf_racing_coins"));
+Number(
+ localStorage.getItem(
+  "pf_racing_coins"
+ )
+);
 
 if(!Number.isFinite(coins))
  coins=1000;
+
 
 try{
 
@@ -704,13 +943,21 @@ try{
  );
 
  if(Array.isArray(saved)){
+
   saved.forEach((u,i)=>{
+
    if(upgrades[i])
-    Object.assign(upgrades[i],u);
+    Object.assign(
+     upgrades[i],
+     u
+    );
+
   });
+
  }
 
 }catch(e){}
+
 
 function save(){
 
@@ -723,12 +970,13 @@ function save(){
   "pf_racing_upgrades",
   JSON.stringify(upgrades)
  );
+
 }
 
 
-/* =====================================================
+/* =========================
 SETTINGS
-===================================================== */
+========================= */
 
 let selectedCar=0;
 let difficulty="normal";
@@ -750,9 +998,9 @@ let brakeInput=false;
 let nitroInput=false;
 
 
-/* =====================================================
+/* =========================
 DOM
-===================================================== */
+========================= */
 
 const menu=
 document.getElementById("menu");
@@ -773,38 +1021,57 @@ const controls=
 document.getElementById("controls");
 
 
-/* =====================================================
+/* =========================
 MENU
-===================================================== */
+========================= */
 
 function refreshMoney(){
 
- document.getElementById("coins")
- .textContent=
+ document.getElementById(
+  "coins"
+ ).textContent=
  coins.toLocaleString();
 
 }
+
 
 function refreshStats(){
 
  const d=carData[selectedCar];
  const u=upgrades[selectedCar];
 
- document.getElementById("speedStat")
- .style.width=
- Math.min(100,d.speed+u.speed*4)+"%";
+ document.getElementById(
+  "speedStat"
+ ).style.width=
+ Math.min(
+  100,
+  d.speed+u.speed*4
+ )+"%";
 
- document.getElementById("accelStat")
- .style.width=
- Math.min(100,d.accel+u.engine*4)+"%";
+ document.getElementById(
+  "accelStat"
+ ).style.width=
+ Math.min(
+  100,
+  d.accel+u.engine*4
+ )+"%";
 
- document.getElementById("handlingStat")
- .style.width=
- Math.min(100,d.handling+u.handling*4)+"%";
+ document.getElementById(
+  "handlingStat"
+ ).style.width=
+ Math.min(
+  100,
+  d.handling+u.handling*4
+ )+"%";
 
- document.getElementById("nitroStat")
- .style.width=
- Math.min(100,d.nitro+u.nitro*4)+"%";
+ document.getElementById(
+  "nitroStat"
+ ).style.width=
+ Math.min(
+  100,
+  d.nitro+u.nitro*4
+ )+"%";
+
 }
 
 
@@ -819,115 +1086,202 @@ function refreshUpgrades(){
  upgrades[selectedCar];
 
  const data=[
-  ["engine","ENGINE","Akselerasi"],
-  ["speed","TOP SPEED","Kecepatan maksimum"],
-  ["handling","HANDLING","Belok lebih responsif"],
-  ["nitro","NITRO","Kapasitas nitro"],
-  ["brake","BRAKE","Pengereman"]
+
+  [
+   "engine",
+   "ENGINE",
+   "Akselerasi"
+  ],
+
+  [
+   "speed",
+   "TOP SPEED",
+   "Kecepatan maksimum"
+  ],
+
+  [
+   "handling",
+   "HANDLING",
+   "Belok lebih responsif"
+  ],
+
+  [
+   "nitro",
+   "NITRO",
+   "Kapasitas nitro"
+  ],
+
+  [
+   "brake",
+   "BRAKE",
+   "Pengereman"
+  ]
+
  ];
 
+
  box.innerHTML="";
+
 
  data.forEach(item=>{
 
   const key=item[0];
   const level=u[key];
-  const price=150+level*125;
+
+  const price=
+   150+level*125;
 
   const row=
-  document.createElement("div");
+   document.createElement(
+    "div"
+   );
 
   row.className="upgrade";
 
   row.innerHTML=`
+
   <div class="upgradeInfo">
-   <div class="upgradeName">${item[1]}</div>
+
+   <div class="upgradeName">
+    ${item[1]}
+   </div>
+
    <div class="upgradeDesc">
     ${item[2]} • Level ${level}/5
    </div>
+
   </div>
 
-  <button ${level>=5||coins<price?"disabled":""}>
+  <button
+   ${level>=5||coins<price?"disabled":""}
+  >
    ${level>=5?"MAX":"💰 "+price}
   </button>
+
   `;
 
-  row.querySelector("button")
-  .onclick=()=>{
 
-   if(level>=5)return;
+  const button=
+   row.querySelector("button");
 
-   if(coins<price)return;
 
-   coins-=price;
-   u[key]++;
+  button.addEventListener(
+   "click",
+   e=>{
 
-   save();
-   refreshMoney();
-   refreshStats();
-   refreshUpgrades();
-  };
+    e.stopPropagation();
+
+    if(level>=5)return;
+    if(coins<price)return;
+
+    coins-=price;
+
+    u[key]++;
+
+    save();
+
+    refreshMoney();
+    refreshStats();
+    refreshUpgrades();
+
+   }
+  );
+
 
   box.appendChild(row);
 
  });
+
 }
 
 
-document.querySelectorAll(".carChoice")
-.forEach(el=>{
+document.querySelectorAll(
+ ".carChoice"
+).forEach(el=>{
 
- el.onclick=()=>{
+ el.addEventListener(
+  "click",
+  ()=>{
 
-  selectedCar=
-   Number(el.dataset.car);
+   selectedCar=
+    Number(el.dataset.car);
 
-  document.querySelectorAll(".carChoice")
-  .forEach(x=>
-   x.classList.remove("selected")
-  );
+   document.querySelectorAll(
+    ".carChoice"
+   ).forEach(x=>
+    x.classList.remove(
+     "selected"
+    )
+   );
 
-  el.classList.add("selected");
+   el.classList.add(
+    "selected"
+   );
 
-  refreshStats();
-  refreshUpgrades();
- };
+   refreshStats();
+   refreshUpgrades();
+
+  }
+ );
+
 });
 
 
-document.querySelectorAll("[data-difficulty]")
-.forEach(el=>{
+document.querySelectorAll(
+ "[data-difficulty]"
+).forEach(el=>{
 
- el.onclick=()=>{
+ el.addEventListener(
+  "click",
+  ()=>{
 
-  difficulty=
-   el.dataset.difficulty;
+   difficulty=
+    el.dataset.difficulty;
 
-  document.querySelectorAll("[data-difficulty]")
-  .forEach(x=>
-   x.classList.remove("selected")
-  );
+   document.querySelectorAll(
+    "[data-difficulty]"
+   ).forEach(x=>
+    x.classList.remove(
+     "selected"
+    )
+   );
 
-  el.classList.add("selected");
- };
+   el.classList.add(
+    "selected"
+   );
+
+  }
+ );
+
 });
 
 
-document.querySelectorAll("[data-laps]")
-.forEach(el=>{
+document.querySelectorAll(
+ "[data-laps]"
+).forEach(el=>{
 
- el.onclick=()=>{
+ el.addEventListener(
+  "click",
+  ()=>{
 
-  totalLaps=
-   Number(el.dataset.laps);
+   totalLaps=
+    Number(el.dataset.laps);
 
-  document.querySelectorAll("[data-laps]")
-  .forEach(x=>
-   x.classList.remove("selected")
-  );
+   document.querySelectorAll(
+    "[data-laps]"
+   ).forEach(x=>
+    x.classList.remove(
+     "selected"
+    )
+   );
 
-  el.classList.add("selected");
- };
+   el.classList.add(
+    "selected"
+   );
+
+  }
+ );
+
 });
 
 
@@ -936,15 +1290,17 @@ refreshStats();
 refreshUpgrades();
 
 
-/* =====================================================
+/* =========================
 SCENE
-===================================================== */
+========================= */
 
 const scene=
 new THREE.Scene();
 
 scene.background=
-new THREE.Color(0x75bddd);
+new THREE.Color(
+ 0x75bddd
+);
 
 scene.fog=
 new THREE.FogExp2(
@@ -953,9 +1309,9 @@ new THREE.FogExp2(
 );
 
 
-/* =====================================================
+/* =========================
 CAMERA
-===================================================== */
+========================= */
 
 const camera=
 new THREE.PerspectiveCamera(
@@ -966,18 +1322,22 @@ new THREE.PerspectiveCamera(
 );
 
 
-/* =====================================================
+/* =========================
 RENDERER
-===================================================== */
+========================= */
 
 const renderer=
 new THREE.WebGLRenderer({
  antialias:true,
- powerPreference:"high-performance"
+ powerPreference:
+  "high-performance"
 });
 
 renderer.setPixelRatio(
- Math.min(devicePixelRatio,1.45)
+ Math.min(
+  devicePixelRatio,
+  1.45
+ )
 );
 
 renderer.setSize(
@@ -996,27 +1356,33 @@ THREE.SRGBColorSpace;
 renderer.toneMapping=
 THREE.ACESFilmicToneMapping;
 
-renderer.toneMappingExposure=1.12;
+renderer.toneMappingExposure=
+1.12;
+
+renderer.domElement.style.touchAction=
+"none";
 
 document.body.appendChild(
  renderer.domElement
 );
 
 
-/* =====================================================
+/* =========================
 POST PROCESSING
-===================================================== */
+========================= */
 
 const composer=
-new EffectComposer(renderer);
-
-const renderPass=
-new RenderPass(
- scene,
- camera
+new EffectComposer(
+ renderer
 );
 
-composer.addPass(renderPass);
+composer.addPass(
+ new RenderPass(
+  scene,
+  camera
+ )
+);
+
 
 const bloomPass=
 new UnrealBloomPass(
@@ -1029,17 +1395,19 @@ new UnrealBloomPass(
  .78
 );
 
-composer.addPass(bloomPass);
-
-const outputPass=
-new OutputPass();
-
-composer.addPass(outputPass);
+composer.addPass(
+ bloomPass
+);
 
 
-/* =====================================================
+composer.addPass(
+ new OutputPass()
+);
+
+
+/* =========================
 LIGHTING
-===================================================== */
+========================= */
 
 scene.add(
  new THREE.HemisphereLight(
@@ -1052,14 +1420,14 @@ scene.add(
 
 const sun=
 new THREE.DirectionalLight(
-  0xffe0bd,
-  3.8
+ 0xffe0bd,
+ 3.8
 );
 
 sun.position.set(
-  80,
-  130,
-  50
+ 80,
+ 130,
+ 50
 );
 
 sun.castShadow=true;
@@ -1072,17 +1440,13 @@ sun.shadow.camera.right=180;
 sun.shadow.camera.top=180;
 sun.shadow.camera.bottom=-180;
 
-sun.shadow.bias=-.0002;
-
 scene.add(sun);
 
 
-/* blue fill */
-
 const fill=
 new THREE.DirectionalLight(
-  0x65aaff,
-  1.15
+ 0x65aaff,
+ 1.15
 );
 
 fill.position.set(
@@ -1094,9 +1458,9 @@ fill.position.set(
 scene.add(fill);
 
 
-/* =====================================================
+/* =========================
 MATERIAL
-===================================================== */
+========================= */
 
 function material(
  color,
@@ -1109,12 +1473,13 @@ function material(
   roughness:rough,
   metalness:metal
  });
+
 }
 
 
-/* =====================================================
+/* =========================
 TRACK
-===================================================== */
+========================= */
 
 const POINTS=720;
 const track=[];
@@ -1137,15 +1502,18 @@ for(let i=0;i<POINTS;i++){
    Math.sin(a)*radius
   )
  );
+
 }
 
 
 function wrap(i){
 
  i=Math.floor(i);
+
  i%=POINTS;
 
- if(i<0)i+=POINTS;
+ if(i<0)
+  i+=POINTS;
 
  return i;
 }
@@ -1157,34 +1525,41 @@ function pointAt(p){
  const f=p-i;
 
  return new THREE.Vector3()
- .lerpVectors(
-  track[wrap(i)],
-  track[wrap(i+1)],
-  f
- );
+  .lerpVectors(
+   track[wrap(i)],
+   track[wrap(i+1)],
+   f
+  );
+
 }
 
 
 function tangentAt(p){
 
- const a=pointAt(p-2);
- const b=pointAt(p+2);
+ const a=
+  pointAt(p-2);
+
+ const b=
+  pointAt(p+2);
 
  return new THREE.Vector3()
- .subVectors(b,a)
- .normalize();
+  .subVectors(b,a)
+  .normalize();
+
 }
 
 
 function sideAt(p){
 
- const t=tangentAt(p);
+ const t=
+  tangentAt(p);
 
  return new THREE.Vector3(
   -t.z,
   0,
   t.x
  ).normalize();
+
 }
 
 
@@ -1193,7 +1568,8 @@ function roadPosition(
  offset=0
 ){
 
- const pos=pointAt(p);
+ const pos=
+  pointAt(p);
 
  pos.addScaledVector(
   sideAt(p),
@@ -1206,9 +1582,9 @@ function roadPosition(
 }
 
 
-/* =====================================================
+/* =========================
 ROAD
-===================================================== */
+========================= */
 
 const roadVertices=[];
 const roadIndices=[];
@@ -1217,32 +1593,36 @@ const roadWidth=13;
 for(let i=0;i<POINTS;i++){
 
  const p=track[i];
- const side=sideAt(i);
+
+ const side=
+  sideAt(i);
 
  const left=
   p.clone()
-  .addScaledVector(
-   side,
-   roadWidth/2
-  );
+   .addScaledVector(
+    side,
+    roadWidth/2
+   );
 
  const right=
   p.clone()
-  .addScaledVector(
-   side,
-   -roadWidth/2
-  );
+   .addScaledVector(
+    side,
+    -roadWidth/2
+   );
 
  roadVertices.push(
   left.x,.02,left.z,
   right.x,.02,right.z
  );
+
 }
 
 
 for(let i=0;i<POINTS;i++){
 
- const n=(i+1)%POINTS;
+ const n=
+  (i+1)%POINTS;
 
  const a=i*2;
  const b=i*2+1;
@@ -1253,6 +1633,7 @@ for(let i=0;i<POINTS;i++){
   a,b,c,
   b,d,c
  );
+
 }
 
 
@@ -1267,7 +1648,10 @@ roadGeo.setAttribute(
  )
 );
 
-roadGeo.setIndex(roadIndices);
+roadGeo.setIndex(
+ roadIndices
+);
+
 roadGeo.computeVertexNormals();
 
 
@@ -1286,9 +1670,9 @@ road.receiveShadow=true;
 scene.add(road);
 
 
-/* =====================================================
+/* =========================
 GROUND
-===================================================== */
+========================= */
 
 const ground=
 new THREE.Mesh(
@@ -1306,16 +1690,17 @@ new THREE.Mesh(
 ground.rotation.x=
 -Math.PI/2;
 
-ground.position.y=-.07;
+ground.position.y=
+-.07;
 
 ground.receiveShadow=true;
 
 scene.add(ground);
 
 
-/* =====================================================
+/* =========================
 ROAD EDGE
-===================================================== */
+========================= */
 
 for(
  const offset of [
@@ -1326,16 +1711,26 @@ for(
 
  const pts=[];
 
- for(let i=0;i<POINTS;i+=2){
+ for(
+  let i=0;
+  i<POINTS;
+  i+=2
+ ){
 
   pts.push(
-   roadPosition(i,offset)
+   roadPosition(
+    i,
+    offset
+   )
   );
+
  }
+
 
  const geo=
  new THREE.BufferGeometry()
- .setFromPoints(pts);
+  .setFromPoints(pts);
+
 
  const line=
  new THREE.LineLoop(
@@ -1348,14 +1743,19 @@ for(
  line.position.y=.07;
 
  scene.add(line);
+
 }
 
 
-/* =====================================================
-CENTER DASHES
-===================================================== */
+/* =========================
+CENTER MARKING
+========================= */
 
-for(let i=0;i<POINTS;i+=13){
+for(
+ let i=0;
+ i<POINTS;
+ i+=13
+){
 
  const dash=
  new THREE.Mesh(
@@ -1376,20 +1776,28 @@ for(let i=0;i<POINTS;i+=13){
 
  dash.position.y=.08;
 
- const t=tangentAt(i);
+ const t=
+  tangentAt(i);
 
  dash.rotation.y=
-  Math.atan2(t.x,t.z);
+  Math.atan2(
+   t.x,
+   t.z
+  );
 
  scene.add(dash);
 }
 
 
-/* =====================================================
+/* =========================
 START LINE
-===================================================== */
+========================= */
 
-for(let i=-5;i<6;i++){
+for(
+ let i=-5;
+ i<6;
+ i++
+){
 
  const tile=
  new THREE.Mesh(
@@ -1407,7 +1815,10 @@ for(let i=-5;i<6;i++){
  );
 
  tile.position.copy(
-  roadPosition(0,i*roadWidth/11)
+  roadPosition(
+   0,
+   i*roadWidth/11
+  )
  );
 
  tile.position.y=.09;
@@ -1422,14 +1833,15 @@ for(let i=-5;i<6;i++){
 }
 
 
-/* =====================================================
+/* =========================
 CAR
-===================================================== */
+========================= */
 
 function createCar(color){
 
  const car=
- new THREE.Group();
+  new THREE.Group();
+
 
  const paint=
  new THREE.MeshPhysicalMaterial({
@@ -1440,12 +1852,14 @@ function createCar(color){
   clearcoatRoughness:.12
  });
 
+
  const black=
  material(
   0x06080b,
   .3,
   .55
  );
+
 
  const glass=
  new THREE.MeshPhysicalMaterial({
@@ -1471,12 +1885,13 @@ function createCar(color){
  );
 
  lower.position.y=.52;
+
  lower.castShadow=true;
 
  car.add(lower);
 
 
- /* MAIN BODY */
+ /* BODY */
 
  const body=
  new THREE.Mesh(
@@ -1489,6 +1904,7 @@ function createCar(color){
  );
 
  body.position.y=.79;
+
  body.castShadow=true;
 
  car.add(body);
@@ -1520,14 +1936,14 @@ function createCar(color){
  [-1,1].forEach(side=>{
 
   const skirt=
-  new THREE.Mesh(
-   new THREE.BoxGeometry(
-    .12,
-    .25,
-    3.45
-   ),
-   black
-  );
+   new THREE.Mesh(
+    new THREE.BoxGeometry(
+     .12,
+     .25,
+     3.45
+    ),
+    black
+   );
 
   skirt.position.set(
    side*1.19,
@@ -1608,14 +2024,14 @@ function createCar(color){
  [-.72,.72].forEach(x=>{
 
   const support=
-  new THREE.Mesh(
-   new THREE.BoxGeometry(
-    .1,
-    .45,
-    .1
-   ),
-   black
-  );
+   new THREE.Mesh(
+    new THREE.BoxGeometry(
+     .1,
+     .45,
+     .1
+    ),
+    black
+   );
 
   support.position.set(
    x,
@@ -1633,17 +2049,20 @@ function createCar(color){
  const wheels=[];
 
  const wheelPositions=[
+
   [-1.18,.48,1.4],
   [1.18,.48,1.4],
   [-1.18,.48,-1.4],
   [1.18,.48,-1.4]
+
  ];
+
 
  wheelPositions.forEach(
  (p,index)=>{
 
   const holder=
-  new THREE.Group();
+   new THREE.Group();
 
   holder.position.set(
    p[0],
@@ -1653,15 +2072,15 @@ function createCar(color){
 
 
   const tire=
-  new THREE.Mesh(
-   new THREE.CylinderGeometry(
-    .48,
-    .48,
-    .4,
-    28
-   ),
-   black
-  );
+   new THREE.Mesh(
+    new THREE.CylinderGeometry(
+     .48,
+     .48,
+     .4,
+     28
+    ),
+    black
+   );
 
   tire.rotation.z=
    Math.PI/2;
@@ -1672,19 +2091,19 @@ function createCar(color){
 
 
   const rim=
-  new THREE.Mesh(
-   new THREE.CylinderGeometry(
-    .27,
-    .27,
-    .415,
-    20
-   ),
-   new THREE.MeshStandardMaterial({
-    color:0xaeb7c1,
-    metalness:1,
-    roughness:.16
-   })
-  );
+   new THREE.Mesh(
+    new THREE.CylinderGeometry(
+     .27,
+     .27,
+     .415,
+     20
+    ),
+    new THREE.MeshStandardMaterial({
+     color:0xaeb7c1,
+     metalness:1,
+     roughness:.16
+    })
+   );
 
   rim.rotation.z=
    Math.PI/2;
@@ -1693,19 +2112,19 @@ function createCar(color){
 
 
   const hub=
-  new THREE.Mesh(
-   new THREE.CylinderGeometry(
-    .1,
-    .1,
-    .43,
-    12
-   ),
-   material(
-    0x252b33,
-    .25,
-    1
-   )
-  );
+   new THREE.Mesh(
+    new THREE.CylinderGeometry(
+     .1,
+     .1,
+     .43,
+     12
+    ),
+    material(
+     0x252b33,
+     .25,
+     1
+    )
+   );
 
   hub.rotation.z=
    Math.PI/2;
@@ -1736,14 +2155,14 @@ function createCar(color){
  [-.72,.72].forEach(x=>{
 
   const head=
-  new THREE.Mesh(
-   new THREE.BoxGeometry(
-    .46,
-    .17,
-    .07
-   ),
-   headMat
-  );
+   new THREE.Mesh(
+    new THREE.BoxGeometry(
+     .46,
+     .17,
+     .07
+    ),
+    headMat
+   );
 
   head.position.set(
    x,
@@ -1755,14 +2174,14 @@ function createCar(color){
 
 
   const lamp=
-  new THREE.SpotLight(
-   0xbfeeff,
-   9,
-   35,
-   Math.PI/8,
-   .7,
-   1.5
-  );
+   new THREE.SpotLight(
+    0xbfeeff,
+    9,
+    35,
+    Math.PI/8,
+    .7,
+    1.5
+   );
 
   lamp.position.set(
    x,
@@ -1770,8 +2189,9 @@ function createCar(color){
    2.15
   );
 
+
   const target=
-  new THREE.Object3D();
+   new THREE.Object3D();
 
   target.position.set(
    x,
@@ -1788,7 +2208,7 @@ function createCar(color){
  });
 
 
- /* TAIL LIGHT */
+ /* TAIL LIGHTS */
 
  const tailMat=
  new THREE.MeshStandardMaterial({
@@ -1801,14 +2221,14 @@ function createCar(color){
  [-.72,.72].forEach(x=>{
 
   const tail=
-  new THREE.Mesh(
-   new THREE.BoxGeometry(
-    .48,
-    .16,
-    .07
-   ),
-   tailMat
-  );
+   new THREE.Mesh(
+    new THREE.BoxGeometry(
+     .48,
+     .16,
+     .07
+    ),
+    tailMat
+   );
 
   tail.position.set(
    x,
@@ -1821,14 +2241,14 @@ function createCar(color){
  });
 
 
- /* NEON UNDERGLOW */
+ /* UNDERGLOW */
 
  const neon=
- new THREE.PointLight(
-  color,
-  1.5,
-  5
- );
+  new THREE.PointLight(
+   color,
+   1.5,
+   5
+  );
 
  neon.position.y=.25;
 
@@ -1842,43 +2262,38 @@ function createCar(color){
 }
 
 
-/* =====================================================
+/* =========================
 PLAYER
-===================================================== */
+========================= */
 
 let player=
-createCar(
- carData[selectedCar].color
-);
+ createCar(
+  carData[selectedCar].color
+ );
 
 scene.add(player);
 
 
 function replacePlayer(){
 
- const oldPosition=
-  player.position.clone();
-
  scene.remove(player);
 
  player=
- createCar(
-  carData[selectedCar].color
- );
-
- player.position.copy(
-  oldPosition
- );
+  createCar(
+   carData[selectedCar].color
+  );
 
  scene.add(player);
+
 }
 
 
-/* =====================================================
+/* =========================
 AI
-===================================================== */
+========================= */
 
 const rivals=[];
+
 
 function aiBaseSpeed(){
 
@@ -1898,17 +2313,17 @@ function aiBaseSpeed(){
 for(let i=0;i<7;i++){
 
  const ai=
- createCar(
-  [
-   0xed3030,
-   0x00c878,
-   0xa855f7,
-   0xf59e0b,
-   0xffffff,
-   0xff4d9c,
-   0x22d3ee
-  ][i]
- );
+  createCar(
+   [
+    0xed3030,
+    0x00c878,
+    0xa855f7,
+    0xf59e0b,
+    0xffffff,
+    0xff4d9c,
+    0x22d3ee
+   ][i]
+  );
 
  scene.add(ai);
 
@@ -1918,41 +2333,46 @@ for(let i=0;i<7;i++){
 
   distance:-(i+1)*14,
 
-  lane:[-4,-2,2,4][i%4],
+  lane:[
+   -4,
+   -2,
+   2,
+   4
+  ][i%4],
 
-  speed:
-   aiBaseSpeed()+
-   Math.random()*.018,
+  speed:0,
 
   phase:
    Math.random()*20
 
  });
+
 }
 
 
-/* =====================================================
+/* =========================
 TREES
-===================================================== */
+========================= */
 
 function makeTree(){
 
  const group=
- new THREE.Group();
+  new THREE.Group();
+
 
  const trunk=
- new THREE.Mesh(
-  new THREE.CylinderGeometry(
-   .18,
-   .27,
-   2.4,
-   8
-  ),
-  material(
-   0x57391f,
-   1
-  )
- );
+  new THREE.Mesh(
+   new THREE.CylinderGeometry(
+    .18,
+    .27,
+    2.4,
+    8
+   ),
+   material(
+    0x57391f,
+    1
+   )
+  );
 
  trunk.position.y=1.2;
 
@@ -1962,19 +2382,19 @@ function makeTree(){
  for(let i=0;i<3;i++){
 
   const leaves=
-  new THREE.Mesh(
-   new THREE.ConeGeometry(
-    1.45-i*.22,
-    2.8,
-    12
-   ),
-   material(
-    i===0
-     ? 0x164e2c
-     : 0x21733a,
-    1
-   )
-  );
+   new THREE.Mesh(
+    new THREE.ConeGeometry(
+     1.45-i*.22,
+     2.8,
+     12
+    ),
+    material(
+     i===0
+      ? 0x164e2c
+      : 0x21733a,
+     1
+    )
+   );
 
   leaves.position.y=
    2.6+i*1.1;
@@ -1982,6 +2402,7 @@ function makeTree(){
   leaves.castShadow=true;
 
   group.add(leaves);
+
  }
 
  return group;
@@ -1996,7 +2417,7 @@ for(let i=0;i<90;i++){
    : -11-Math.random()*22;
 
  const tree=
- makeTree();
+  makeTree();
 
  tree.position.copy(
   roadPosition(
@@ -2013,47 +2434,55 @@ for(let i=0;i<90;i++){
 }
 
 
-/* =====================================================
+/* =========================
 BUILDINGS
-===================================================== */
+========================= */
 
 function makeBuilding(){
 
- const w=4+Math.random()*6;
- const d=4+Math.random()*6;
- const h=5+Math.random()*13;
+ const w=
+  4+Math.random()*6;
+
+ const d=
+  4+Math.random()*6;
+
+ const h=
+  5+Math.random()*13;
+
 
  const group=
- new THREE.Group();
+  new THREE.Group();
+
 
  const body=
- new THREE.Mesh(
-  new THREE.BoxGeometry(
-   w,h,d
-  ),
-  material(
-   [
-    0x718394,
-    0x526474,
-    0x8997a3,
-    0x3e4e5d
-   ][
-    Math.floor(
-     Math.random()*4
-    )
-   ],
-   .82,
-   .15
-  )
- );
+  new THREE.Mesh(
+   new THREE.BoxGeometry(
+    w,
+    h,
+    d
+   ),
+   material(
+    [
+     0x718394,
+     0x526474,
+     0x8997a3,
+     0x3e4e5d
+    ][
+     Math.floor(
+      Math.random()*4
+     )
+    ],
+    .82,
+    .15
+   )
+  );
 
  body.position.y=h/2;
+
  body.castShadow=true;
 
  group.add(body);
 
-
- /* WINDOWS */
 
  for(
   let y=2;
@@ -2068,19 +2497,21 @@ function makeBuilding(){
   ){
 
    const window=
-   new THREE.Mesh(
-    new THREE.BoxGeometry(
-     .75,
-     .65,
-     .04
-    ),
-    new THREE.MeshStandardMaterial({
-     color:0xffd66b,
-     emissive:0xffa000,
-     emissiveIntensity:
-      Math.random()>.25?1.8:.15
-    })
-   );
+    new THREE.Mesh(
+     new THREE.BoxGeometry(
+      .75,
+      .65,
+      .04
+     ),
+     new THREE.MeshStandardMaterial({
+      color:0xffd66b,
+      emissive:0xffa000,
+      emissiveIntensity:
+       Math.random()>.25
+        ? 1.8
+        : .15
+     })
+    );
 
    window.position.set(
     x,
@@ -2089,9 +2520,10 @@ function makeBuilding(){
    );
 
    group.add(window);
-  }
- }
 
+  }
+
+ }
 
  return group;
 }
@@ -2118,9 +2550,9 @@ for(let i=0;i<38;i++){
 }
 
 
-/* =====================================================
+/* =========================
 MOUNTAINS
-===================================================== */
+========================= */
 
 for(let i=0;i<24;i++){
 
@@ -2128,17 +2560,17 @@ for(let i=0;i<24;i++){
   i/24*Math.PI*2;
 
  const mountain=
- new THREE.Mesh(
-  new THREE.ConeGeometry(
-   14+Math.random()*15,
-   25+Math.random()*35,
-   8
-  ),
-  material(
-   0x4d6874,
-   1
-  )
- );
+  new THREE.Mesh(
+   new THREE.ConeGeometry(
+    14+Math.random()*15,
+    25+Math.random()*35,
+    8
+   ),
+   material(
+    0x4d6874,
+    1
+   )
+  );
 
  mountain.position.set(
   Math.cos(a)*170,
@@ -2150,9 +2582,9 @@ for(let i=0;i<24;i++){
 }
 
 
-/* =====================================================
+/* =========================
 STREET LIGHTS
-===================================================== */
+========================= */
 
 for(let i=0;i<45;i++){
 
@@ -2170,8 +2602,10 @@ for(let i=0;i<45;i++){
    side
   );
 
+
  const pole=
   new THREE.Group();
+
 
  const shaft=
   new THREE.Mesh(
@@ -2226,12 +2660,13 @@ for(let i=0;i<45;i++){
  pole.position.copy(pos);
 
  scene.add(pole);
+
 }
 
 
-/* =====================================================
-INPUT
-===================================================== */
+/* =========================
+KEYBOARD
+========================= */
 
 const keys={};
 
@@ -2244,12 +2679,17 @@ window.addEventListener(
   ]=true;
 
   if(
-   (e.key===" "||
-    e.key==="Escape")&&
+   (
+    e.key===" "||
+    e.key==="Escape"
+   ) &&
    !e.repeat
   ){
+
    togglePause();
+
   }
+
  });
 
 
@@ -2264,6 +2704,10 @@ window.addEventListener(
  });
 
 
+/* =========================
+TOUCH BUTTON SYSTEM
+========================= */
+
 function holdButton(
  id,
  down,
@@ -2271,78 +2715,160 @@ function holdButton(
 ){
 
  const element=
- document.getElementById(id);
+  document.getElementById(id);
+
+ let activePointers=
+  new Set();
+
+
+ function press(e){
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  activePointers.add(
+   e.pointerId
+  );
+
+  element.classList.add(
+   "pressed"
+  );
+
+  try{
+
+   element.setPointerCapture(
+    e.pointerId
+   );
+
+  }catch(err){}
+
+  down();
+
+ }
+
+
+ function release(e){
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  activePointers.delete(
+   e.pointerId
+  );
+
+  if(
+   activePointers.size===0
+  ){
+
+   element.classList.remove(
+    "pressed"
+   );
+
+   up();
+
+  }
+
+ }
+
 
  element.addEventListener(
   "pointerdown",
-  e=>{
-   e.preventDefault();
-   down();
+  press,
+  {
+   passive:false
   }
  );
 
- const release=e=>{
-  if(e)e.preventDefault();
-  up();
- };
 
  element.addEventListener(
   "pointerup",
-  release
+  release,
+  {
+   passive:false
+  }
  );
+
 
  element.addEventListener(
   "pointercancel",
-  release
+  release,
+  {
+   passive:false
+  }
  );
 
+
  element.addEventListener(
-  "pointerleave",
-  release
+  "lostpointercapture",
+  release,
+  {
+   passive:false
+  }
  );
+
 }
 
 
 holdButton(
  "left",
- ()=>steerInput=-1,
+ ()=>{
+  steerInput=-1;
+ },
  ()=>{
   if(steerInput===-1)
    steerInput=0;
  }
 );
 
+
 holdButton(
  "right",
- ()=>steerInput=1,
+ ()=>{
+  steerInput=1;
+ },
  ()=>{
   if(steerInput===1)
    steerInput=0;
  }
 );
 
+
 holdButton(
  "gas",
- ()=>gasInput=true,
- ()=>gasInput=false
+ ()=>{
+  gasInput=true;
+ },
+ ()=>{
+  gasInput=false;
+ }
 );
+
 
 holdButton(
  "brake",
- ()=>brakeInput=true,
- ()=>brakeInput=false
+ ()=>{
+  brakeInput=true;
+ },
+ ()=>{
+  brakeInput=false;
+ }
 );
+
 
 holdButton(
  "boost",
- ()=>nitroInput=true,
- ()=>nitroInput=false
+ ()=>{
+  nitroInput=true;
+ },
+ ()=>{
+  nitroInput=false;
+ }
 );
 
 
-/* =====================================================
+/* =========================
 PAUSE
-===================================================== */
+========================= */
 
 function togglePause(){
 
@@ -2350,63 +2876,112 @@ function togglePause(){
   !gameStarted||
   finished||
   countdownActive
- )return;
+ )
+  return;
 
  paused=!paused;
 
  pauseMenu.style.display=
-  paused?"flex":"none";
+  paused
+   ? "flex"
+   : "none";
+
 }
 
-pauseBtn.onclick=
- togglePause;
+
+pauseBtn.addEventListener(
+ "pointerdown",
+ e=>{
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  togglePause();
+
+ },
+ {
+  passive:false
+ }
+);
+
 
 document.getElementById(
  "resume"
-).onclick=()=>{
+).addEventListener(
+ "click",
+ ()=>{
 
- paused=false;
+  paused=false;
 
- pauseMenu.style.display=
-  "none";
-};
+  pauseMenu.style.display=
+   "none";
+
+ }
+);
+
 
 document.getElementById(
  "restart"
-).onclick=()=>{
- location.reload();
-};
+).addEventListener(
+ "click",
+ ()=>{
+
+  location.reload();
+
+ }
+);
+
 
 document.getElementById(
  "backArcade"
-).onclick=()=>{
- location.href="../index.html";
-};
+).addEventListener(
+ "click",
+ ()=>{
+
+  location.href=
+   "../index.html";
+
+ }
+);
+
 
 document.getElementById(
  "again"
-).onclick=()=>{
- location.reload();
-};
+).addEventListener(
+ "click",
+ ()=>{
+
+  location.reload();
+
+ }
+);
+
 
 document.getElementById(
  "finishArcade"
-).onclick=()=>{
- location.href="../index.html";
-};
+).addEventListener(
+ "click",
+ ()=>{
+
+  location.href=
+   "../index.html";
+
+ }
+);
 
 
-/* =====================================================
+/* =========================
 PLAYER UPDATE
-===================================================== */
+========================= */
 
 function updatePlayer(dt){
 
  const data=
- carData[selectedCar];
+  carData[selectedCar];
 
  const up=
- upgrades[selectedCar];
+  upgrades[selectedCar];
+
 
  const left=
   keys["a"]||
@@ -2430,10 +3005,14 @@ function updatePlayer(dt){
   keys["shift"]||
   nitroInput;
 
+
  let direction=0;
 
- if(left)direction=-1;
- if(right)direction=1;
+ if(left)
+  direction=-1;
+
+ if(right)
+  direction=1;
 
  if(direction===0)
   direction=steerInput;
@@ -2455,6 +3034,7 @@ function updatePlayer(dt){
   speed-=
    .0038*
    dt*60;
+
  }
 
 
@@ -2468,6 +3048,7 @@ function updatePlayer(dt){
     up.brake*.0013
    )*
    dt*60;
+
  }
 
 
@@ -2478,6 +3059,7 @@ function updatePlayer(dt){
   nitro>0&&
   speed>.1;
 
+
  if(usingBoost){
 
   speed+=
@@ -2487,23 +3069,27 @@ function updatePlayer(dt){
   nitro-=
    (
     20-up.nitro
-   )*dt;
+   )*
+   dt;
 
  }else{
 
   nitro+=
    (
-    4+up.nitro*.5
-   )*dt;
+    4+
+    up.nitro*.5
+   )*
+   dt;
+
  }
 
 
  nitro=
- THREE.MathUtils.clamp(
-  nitro,
-  0,
-  100
- );
+  THREE.MathUtils.clamp(
+   nitro,
+   0,
+   100
+  );
 
 
  /* SPEED */
@@ -2516,14 +3102,15 @@ function updatePlayer(dt){
   .59+
   up.speed*.008;
 
+
  speed=
- THREE.MathUtils.clamp(
-  speed,
-  0,
-  usingBoost
-   ? boostMax
-   : normalMax
- );
+  THREE.MathUtils.clamp(
+   speed,
+   0,
+   usingBoost
+    ? boostMax
+    : normalMax
+  );
 
 
  /* STEERING */
@@ -2531,6 +3118,7 @@ function updatePlayer(dt){
  const handling=
   .042+
   up.handling*.0035;
+
 
  lateral+=
   direction*
@@ -2541,12 +3129,13 @@ function updatePlayer(dt){
   )*
   dt*60;
 
+
  lateral=
- THREE.MathUtils.clamp(
-  lateral,
-  -5,
-  5
- );
+  THREE.MathUtils.clamp(
+   lateral,
+   -5,
+   5
+  );
 
 
  /* FORWARD */
@@ -2565,6 +3154,7 @@ function updatePlayer(dt){
    lateral
   );
 
+
  player.position.lerp(
   position,
   .42
@@ -2576,11 +3166,13 @@ function updatePlayer(dt){
  const tangent=
   tangentAt(distance);
 
+
  const trackAngle=
   Math.atan2(
    tangent.x,
    tangent.z
   );
+
 
  const steeringAngle=
   direction*
@@ -2589,19 +3181,24 @@ function updatePlayer(dt){
    speed*.30
   );
 
+
  const targetRotation=
   trackAngle+
   steeringAngle;
+
 
  let diff=
   targetRotation-
   player.rotation.y;
 
+
  while(diff>Math.PI)
   diff-=Math.PI*2;
 
+
  while(diff<-Math.PI)
   diff+=Math.PI*2;
+
 
  player.rotation.y+=
   diff*.22;
@@ -2610,21 +3207,22 @@ function updatePlayer(dt){
  /* WHEELS */
 
  player.userData.wheels
- .forEach(w=>{
+  .forEach(w=>{
 
-  w.wheel.rotation.x-=
-   speed*dt*60;
+   w.wheel.rotation.x-=
+    speed*dt*60;
 
-  if(w.front){
+   if(w.front){
 
-   w.holder.rotation.y=
-    direction*.42;
-  }
+    w.holder.rotation.y=
+     direction*.42;
 
- });
+   }
+
+  });
 
 
- /* BODY SUSPENSION */
+ /* SUSPENSION */
 
  player.position.y=
   .15+
@@ -2637,33 +3235,46 @@ function updatePlayer(dt){
   );
 
 
- /* NITRO LIGHT */
-
  player.userData.neon.intensity=
   usingBoost
    ? 5
    : 1.2;
+
 }
 
 
-/* =====================================================
-AI
-===================================================== */
+/* =========================
+AI UPDATE
+========================= */
 
 function updateAI(dt){
 
  rivals.forEach(r=>{
+
+  const targetSpeed=
+   aiBaseSpeed();
+
+
+  r.speed=
+   THREE.MathUtils.lerp(
+    r.speed,
+    targetSpeed,
+    .01
+   );
+
 
   r.distance+=
    r.speed*
    dt*
    60;
 
+
   const targetLane=
    Math.sin(
     r.distance*.012+
     r.phase
    )*2.2;
+
 
   r.lane=
    THREE.MathUtils.lerp(
@@ -2672,19 +3283,25 @@ function updateAI(dt){
     .012
    );
 
+
   const pos=
    roadPosition(
     r.distance,
     r.lane
    );
 
+
   r.car.position.lerp(
    pos,
    .18
   );
 
+
   const tangent=
-   tangentAt(r.distance);
+   tangentAt(
+    r.distance
+   );
+
 
   const angle=
    Math.atan2(
@@ -2692,35 +3309,47 @@ function updateAI(dt){
     tangent.z
    );
 
+
   let diff=
    angle-r.car.rotation.y;
+
 
   while(diff>Math.PI)
    diff-=Math.PI*2;
 
+
   while(diff<-Math.PI)
    diff+=Math.PI*2;
+
 
   r.car.rotation.y+=
    diff*.16;
 
+
   r.car.userData.wheels
-  .forEach(w=>{
-   w.wheel.rotation.x-=
-    r.speed*dt*60;
-  });
+   .forEach(w=>{
+
+    w.wheel.rotation.x-=
+     r.speed*
+     dt*
+     60;
+
+   });
 
  });
+
 }
 
 
-/* =====================================================
+/* =========================
 COLLISION
-===================================================== */
+========================= */
 
 function collision(){
 
- for(const r of rivals){
+ for(
+  const r of rivals
+ ){
 
   const dx=
    player.position.x-
@@ -2731,11 +3360,16 @@ function collision(){
    r.car.position.z;
 
   const d=
-   Math.hypot(dx,dz);
+   Math.hypot(
+    dx,
+    dz
+   );
+
 
   if(d<2.7){
 
    speed*=.55;
+
 
    if(d>.01){
 
@@ -2744,33 +3378,41 @@ function collision(){
 
     player.position.z+=
      dz/d*.13;
+
    }
+
   }
+
  }
+
 }
 
 
-/* =====================================================
+/* =========================
 CAMERA
-===================================================== */
+========================= */
 
 function updateCamera(){
 
  const tangent=
   tangentAt(distance);
 
+
  const behind=
   tangent.clone()
-  .multiplyScalar(-1);
+   .multiplyScalar(-1);
+
 
  const desired=
   player.position.clone()
-  .addScaledVector(
-   behind,
-   9.5
-  );
+   .addScaledVector(
+    behind,
+    9.5
+   );
+
 
  desired.y+=4.7;
+
 
  camera.position.lerp(
   desired,
@@ -2781,110 +3423,136 @@ function updateCamera(){
  const look=
   player.position.clone();
 
+
  look.y+=1.05;
+
 
  look.addScaledVector(
   tangent,
   8
  );
 
+
  camera.lookAt(look);
 
-
- /* SPEED FOV */
 
  const targetFov=
   64+
   speed*18;
 
+
  camera.fov=
- THREE.MathUtils.lerp(
-  camera.fov,
-  targetFov,
-  .06
- );
+  THREE.MathUtils.lerp(
+   camera.fov,
+   targetFov,
+   .06
+  );
+
 
  camera.updateProjectionMatrix();
+
 }
 
 
-/* =====================================================
+/* =========================
 POSITION
-===================================================== */
+========================= */
 
 function getPosition(){
 
  let position=1;
 
- for(const r of rivals){
 
-  if(r.distance>distance)
+ for(
+  const r of rivals
+ ){
+
+  if(
+   r.distance>distance
+  ){
+
    position++;
+
+  }
+
  }
+
 
  return THREE.MathUtils.clamp(
   position,
   1,
   8
  );
+
 }
 
 
-/* =====================================================
+/* =========================
 HUD
-===================================================== */
+========================= */
 
 function updateHUD(){
 
  document.getElementById(
   "speed"
  ).textContent=
- Math.round(speed*390)+
- " KM/H";
+  Math.round(
+   speed*390
+  )+
+  " KM/H";
+
 
  const lap=
- Math.min(
-  totalLaps,
-  Math.floor(
-   distance/POINTS
-  )+1
- );
+  Math.min(
+   totalLaps,
+   Math.floor(
+    distance/POINTS
+   )+1
+  );
+
 
  document.getElementById(
   "lap"
  ).textContent=
- "LAP "+
- lap+
- " / "+
- totalLaps;
+  "LAP "+
+  lap+
+  " / "+
+  totalLaps;
+
 
  document.getElementById(
   "position"
  ).textContent=
- "POSISI "+
- getPosition()+
- " / 8";
+  "POSISI "+
+  getPosition()+
+  " / 8";
+
 
  document.getElementById(
   "nitroFill"
  ).style.width=
- nitro+"%";
+  nitro+"%";
+
 }
 
 
-/* =====================================================
+/* =========================
 FINISH
-===================================================== */
+========================= */
 
 function finishRace(){
 
- if(finished)return;
+ if(finished)
+  return;
+
 
  finished=true;
  speed=0;
 
+
  const position=
   getPosition();
+
 
  const reward=
   Math.max(
@@ -2892,9 +3560,11 @@ function finishRace(){
    (9-position)*100
   );
 
+
  coins+=reward;
 
  save();
+
 
  document.getElementById(
   "result"
@@ -2914,34 +3584,50 @@ function finishRace(){
  margin-top:12px;
  color:#facc15;
  font-size:18px">
+
  +${reward} 💰
+
  </div>
+
  `;
 
- finish.style.display="flex";
+
+ finish.style.display=
+  "flex";
+
 }
 
 
-/* =====================================================
+/* =========================
 COUNTDOWN
-===================================================== */
+========================= */
 
 async function startCountdown(){
 
  countdownActive=true;
+
 
  const element=
   document.getElementById(
    "countdown"
   );
 
- element.style.display="flex";
+
+ element.style.display=
+  "flex";
+
 
  for(
-  const text of ["3","2","1"]
+  const text of [
+   "3",
+   "2",
+   "1"
+  ]
  ){
 
-  element.textContent=text;
+  element.textContent=
+   text;
+
 
   await new Promise(
    resolve=>
@@ -2950,9 +3636,13 @@ async function startCountdown(){
      700
     )
   );
+
  }
 
- element.textContent="GO!";
+
+ element.textContent=
+  "GO!";
+
 
  await new Promise(
   resolve=>
@@ -2962,64 +3652,113 @@ async function startCountdown(){
    )
  );
 
- element.style.display="none";
+
+ element.style.display=
+  "none";
+
 
  countdownActive=false;
+
 }
 
 
-/* =====================================================
+/* =========================
 START
-===================================================== */
+========================= */
 
 document.getElementById(
  "startBtn"
-).onclick=()=>{
+).addEventListener(
+ "click",
+ ()=>{
 
- replacePlayer();
+  replacePlayer();
 
- distance=0;
- speed=0;
- lateral=0;
- nitro=100;
 
- paused=false;
- finished=false;
- gameStarted=true;
+  distance=0;
+  speed=0;
+  lateral=0;
+  nitro=100;
 
- player.position.copy(
-  roadPosition(0,0)
- );
 
- player.position.y=.15;
+  paused=false;
+  finished=false;
+  gameStarted=true;
 
- const tangent=
-  tangentAt(0);
 
- player.rotation.y=
-  Math.atan2(
-   tangent.x,
-   tangent.z
+  player.position.copy(
+   roadPosition(
+    0,
+    0
+   )
   );
 
- menu.style.display="none";
- hud.style.display="block";
- pauseBtn.style.display="block";
 
- if(
-  /Android|iPhone|iPad|iPod/i
-  .test(navigator.userAgent)
- ){
-  controls.style.display="flex";
+  player.position.y=.15;
+
+
+  const tangent=
+   tangentAt(0);
+
+
+  player.rotation.y=
+   Math.atan2(
+    tangent.x,
+    tangent.z
+   );
+
+
+  /* RESET AI */
+
+  rivals.forEach(
+   (r,i)=>{
+
+    r.distance=
+     -(i+1)*14;
+
+    r.lane=
+     [-4,-2,2,4][i%4];
+
+    r.speed=
+     aiBaseSpeed()+
+     Math.random()*.018;
+
+    r.car.position.copy(
+     roadPosition(
+      r.distance,
+      r.lane
+     )
+    );
+
+   }
+  );
+
+
+  menu.style.display=
+   "none";
+
+
+  hud.style.display=
+   "block";
+
+
+  pauseBtn.style.display=
+   "block";
+
+
+  controls.style.display=
+   "flex";
+
+
+  startCountdown();
+
  }
-
- startCountdown();
-};
+);
 
 
-/* =====================================================
+/* =========================
 RESIZE
-===================================================== */
+========================= */
 
 window.addEventListener(
  "resize",
@@ -3030,15 +3769,18 @@ window.addEventListener(
 
   camera.updateProjectionMatrix();
 
+
   renderer.setSize(
    innerWidth,
    innerHeight
   );
 
+
   composer.setSize(
    innerWidth,
    innerHeight
   );
+
 
   renderer.setPixelRatio(
    Math.min(
@@ -3046,15 +3788,18 @@ window.addEventListener(
     1.45
    )
   );
- });
+
+ }
+);
 
 
-/* =====================================================
+/* =========================
 LOOP
-===================================================== */
+========================= */
 
 const clock=
-new THREE.Clock();
+ new THREE.Clock();
+
 
 function animate(){
 
@@ -3064,6 +3809,7 @@ function animate(){
    .05
   );
 
+
  if(
   gameStarted&&
   !paused&&
@@ -3072,24 +3818,35 @@ function animate(){
  ){
 
   updatePlayer(dt);
+
   updateAI(dt);
+
   collision();
+
 
   if(
    distance>=
    POINTS*totalLaps
   ){
+
    finishRace();
+
   }
+
  }
+
 
  if(gameStarted){
 
   updateCamera();
+
   updateHUD();
+
  }
 
+
  composer.render();
+
 }
 
 
@@ -3098,24 +3855,29 @@ renderer.setAnimationLoop(
 );
 
 
-/* =====================================================
-INITIAL POSITION
-===================================================== */
+/* =========================
+INITIAL PLAYER
+========================= */
 
 player.position.copy(
- roadPosition(0,0)
+ roadPosition(
+  0,
+  0
+ )
 );
 
 player.position.y=.15;
 
+
 const initialTangent=
-tangentAt(0);
+ tangentAt(0);
+
 
 player.rotation.y=
-Math.atan2(
- initialTangent.x,
- initialTangent.z
-);
+ Math.atan2(
+  initialTangent.x,
+  initialTangent.z
+ );
 
 </script>
 
